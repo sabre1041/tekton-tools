@@ -1,0 +1,58 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cronjob-prune-tekton-pipelinerun
+  namespace: openshift-pipelines
+  annotations:
+    image.openshift.io/triggers: |-
+      [
+        {
+          "from":{
+            "kind":"ImageStreamTag",
+            "name":"cli:latest",
+            "namespace": "openshift"
+          },
+          "fieldPath":"spec.jobTemplate.spec.template.spec.containers[0].image"
+        }
+      ]
+spec:
+  schedule: "0 0 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pipeline-pruner
+              image: registry.redhat.io/openshift4/ose-cli:v4.7
+              env:
+                - name: KEEP_SUCCESSFUL_PIPELINERUNS
+                  value: "5"
+                - name: KEEP_FAILED_PIPELINERUNS
+                  value: "5"
+              command:
+                - /bin/bash
+                - -c
+                - python /scripts/pipelinerun_prune.py --keep-failed=$KEEP_FAILED_PIPELINERUNS --keep-successful=$KEEP_SUCCESSFUL_PIPELINERUNS --all-namespaces
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "128Mi"
+                  cpu: "100m"
+              volumeMounts:
+                - name: scripts
+                  mountPath: "/scripts"
+                  readOnly: true
+          volumes:
+            - name: scripts
+              configMap:
+                name: pipelinerun-prune
+          serviceAccount: tekton-pipelinerun-pruner
+          serviceAccountName: tekton-pipelinerun-pruner
+          terminationGracePeriodSeconds: 60

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - openshift-pipelines-namespace.yaml
+  - tekton-pipelinerun-prune-serviceaccount.yaml
+  - tekton-pipelinerun-prune-clusterrole.yaml
+  - tekton-pipelinerun-prune-clusterrolebinding.yaml
+  - tekton-pipelinerun-prune-cronjob.yaml
+
+configMapGenerator:
+  - name: pipelinerun-prune
+    namespace: openshift-pipelines
+    files:
+      - pipelinerun_prune.py
