@@ -4,18 +4,6 @@ kind: CronJob
 metadata:
   name: cronjob-prune-tekton-pipelinerun
   namespace: openshift-pipelines
-  annotations:
-    image.openshift.io/triggers: |-
-      [
-        {
-          "from":{
-            "kind":"ImageStreamTag",
-            "name":"cli:latest",
-            "namespace": "openshift"
-          },
-          "fieldPath":"spec.jobTemplate.spec.template.spec.containers[0].image"
-        }
-      ]
 spec:
   schedule: "0 0 * * *"
   successfulJobsHistoryLimit: 3
@@ -43,8 +31,8 @@ spec:
                   memory: "128Mi"
                   cpu: "100m"
                 limits:
-                  memory: "128Mi"
-                  cpu: "100m"
+                  memory: "512Mi"
+                  cpu: "300m"
               volumeMounts:
                 - name: scripts
                   mountPath: "/scripts"
