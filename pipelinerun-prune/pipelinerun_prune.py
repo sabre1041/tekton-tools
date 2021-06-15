@@ -34,7 +34,7 @@ class PipelineRunNamespaceHolder:
 
         if pipelinerun.status == PipelineRunStatus.Succeeded:
             self.namespaces[pipelinerun.namespace][pipelinerun.pipeline].successful.append(pipelinerun)
-        elif pipelinerun.status == PipelineRunStatus.Succeeded:
+        elif pipelinerun.status == PipelineRunStatus.Failed:
             self.namespaces[pipelinerun.namespace][pipelinerun.pipeline].failed.append(pipelinerun)
 
 
